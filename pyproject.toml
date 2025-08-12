@@ -1,3 +1,54 @@
+[project]
+name = "streamlit-agraph"
+version = "0.0.46"
+description = "Interactive Graph Vis for Streamlit."
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [
+  { name = "Christian Klose", email = "chris.klose@gmx.net" }
+]
+classifiers = [
+  # Development Status :: How mature is this project? Common values are
+  #   3 - Alpha
+  #   4 - Beta
+  #   5 - Production/Stable
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+  "Framework :: Streamlit",
+]
+
+dependencies = [
+  # By definition, a Custom Component depends on Streamlit.
+  # If your component has other Python dependencies, list
+  # them here.
+  "streamlit >= 0.63",
+  "networkx >= 2.5",
+  "rdflib >= 6.0.2",
+]
+
+[dependency-groups]
+dev = [
+  "ruff>=0.12.8",
+]
+
+[project.urls]
+homepage = "https://github.com/ChrisChross/streamlit-agraph"
+repository = "https://github.com/ChrisChross/streamlit-agraph"
+
+[build-system]
+requires = ["uv_build"]
+build-backend = "uv_build"
+[tool.uv.build-backend]
+module-root = ""
+
 # RUFF settings
 [tool.ruff]
 target-version = "py313"
@@ -13,7 +64,7 @@ select = [
   "I", # isort rules
 ]
 ignore = [
-#  "C901", # max-complexity-10
-#  "E501", # line-too-long
+  #  "C901", # max-complexity-10
+  #  "E501", # line-too-long
 ]
 
