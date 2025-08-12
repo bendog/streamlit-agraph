@@ -1,3 +1,6 @@
+from .node import Node
+
+
 class Edge:
     """
     https://visjs.github.io/vis-network/docs/network/edges.html
@@ -5,19 +8,19 @@ class Edge:
 
     def __init__(
         self,
-        source,
-        target,
-        color="#F7A7A6",
+        source: Node,
+        target: Node,
+        color: str = "#F7A7A6",
         # arrows_to=True,
         # arrows_from=False,
         **kwargs,
     ):
         self.source = source
-        self.__dict__["from"] = source
         self.to = target
         self.color = color
         # self.arrows={"to": arrows_to, "from": arrows_from}
-        self.__dict__.update(**kwargs)
+        for key, value in kwargs.items():
+            setattr(self, key, value)
 
     def to_dict(self):
-        return self.__dict__
+        return {**self.__dict__, "from": self.source}

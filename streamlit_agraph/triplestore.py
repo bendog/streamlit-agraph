@@ -1,8 +1,8 @@
-from typing import List, Set
-from streamlit_agraph.config import Config
-from streamlit_agraph.triple import Triple
-from streamlit_agraph.node import Node
-from streamlit_agraph.edge import Edge
+from typing import Set
+
+from .edge import Edge
+from .node import Node
+from .triple import Triple
 
 
 class TripleStore:

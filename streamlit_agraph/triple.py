@@ -1,5 +1,5 @@
-from streamlit_agraph.node import Node
-from streamlit_agraph.edge import Edge
+from .edge import Edge
+from .node import Node
 
 
 class Triple:

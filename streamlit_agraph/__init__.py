@@ -1,33 +1,33 @@
-import os
 import csv
 import json
-
+import os
 from operator import itemgetter
-import streamlit.components.v1 as components
+
 import streamlit as st
+import streamlit.components.v1 as components
+from streamlit.components.v1.custom_component import CustomComponent
 
 from streamlit_agraph import data
-
 from streamlit_agraph.config import Config, ConfigBuilder
-from streamlit_agraph.triple import Triple
-from streamlit_agraph.node import Node
 from streamlit_agraph.edge import Edge
+from streamlit_agraph.node import Node
+from streamlit_agraph.triple import Triple
 from streamlit_agraph.triplestore import TripleStore
 
-_RELEASE = True
+_RELEASE: bool = True
 
 if _RELEASE:
-    parent_dir = os.path.dirname(os.path.abspath(__file__))
-    build_dir = os.path.join(parent_dir, "frontend/build")
-    _agraph = components.declare_component("agraph", path=build_dir)
+    parent_dir: str = os.path.dirname(os.path.abspath(__file__))
+    build_dir: str = os.path.join(parent_dir, "frontend/build")
+    _agraph: CustomComponent = components.declare_component("agraph", path=build_dir)
 else:
-    _agraph = components.declare_component(
+    _agraph: CustomComponent = components.declare_component(
         "agraph",
         url="http://localhost:3001",
     )
 
 
-def agraph(nodes, edges, config):
+def agraph(nodes: list[Node], edges: list[Edge], config: Config):
     node_ids = [node.id for node in nodes]
     if len(node_ids) > len(set(node_ids)):
         st.warning("Duplicated node IDs exist.")
