@@ -1,63 +1,119 @@
 import json
 import os
+from typing import Annotated, Any, Literal, TypedDict
+
 import streamlit as st
 
 
+class StabilizationConfig(TypedDict, total=False):
+    enabled: bool
+    fit: bool
+
+
+class PysicsConfig(TypedDict, total=False):
+    enabled: bool
+    solver: str
+    minVelocity: int
+    maxVelocity: int
+    stabilization: StabilizationConfig
+    timestep: float
+
+
+class HierarchicalConfig(TypedDict, total=False):
+    enabled: bool
+    levelSeparation: int
+    nodeSpacing: int
+    treeSpacing: int
+    blockShifting: bool
+    edgeMinimization: bool
+    parentCentralization: bool
+    direction: Annotated[str, Literal["UD", "DU", "LR", "RL"]]  # UD, DU, LR, RL
+    sortMethod: Annotated[str, Literal["hubsize", "directed"]]  # hubsize, directed
+    shakeTowards: Annotated[str, Literal["roots", "leaves"]]  # roots, leaves
+
+
+class LayoutConfig(TypedDict, total=False):
+    hierarchical: HierarchicalConfig
+
+
 class Config:
+    """Configuration class for the agraph component."""
+
+    @classmethod
+    def from_json(cls, path: str):
+        """Create a Config instance from a JSON file."""
+        with open(path, "r") as f:
+            config_dict = json.load(f)
+        return cls(**config_dict)
+
     def __init__(
         self,
-        height=750,
-        width=750,
-        directed=True,
-        physics=True,
-        hierarchical=False,
-        from_json=None,
+        height: int = 750,
+        width: int = 750,
+        directed: bool = True,
+        physics: PysicsConfig | bool = True,
+        layout: LayoutConfig | None = None,
+        hierarchical: bool = False,
+        from_json: dict[str, Any] | None = None,
         **kwargs,
     ):
-        self.height = f"{height}px"
-        self.width = f"{width}px"
+        if from_json:
+            raise DeprecationWarning(
+                "from_json is deprecated, use Config.from_json(path) at instance creation instead."
+            )
+
+        self.height: str = f"{height}px"
+        self.width: str = f"{width}px"
         if not directed:
-            self.edges = {"arrows": "none"}
+            self.edges: dict[str, Any] = {"arrows": "none"}
 
         # https://visjs.github.io/vis-network/docs/network/physics.html#
-        self.physics = {
-            "enabled": physics,
-            "solver": kwargs.get("solver", "barnesHut"),
-            "minVelocity": kwargs.get("minVelocity", 1),
-            "maxVelocity": kwargs.get("maxVelocity", 100),
-            "stabilization": {
-                "enabled": kwargs.get("stabilization", True),
-                "fit": kwargs.get("fit", True),
-            },
-            "timestep": kwargs.get("timestep", 0.5),
-        }
-        # https://visjs.github.io/vis-network/docs/network/layout.html
-        self.layout = {
-            "hierarchical": {
-                "enabled": hierarchical,
-                "levelSeparation": kwargs.get("levelSeparation", 150),
-                "nodeSpacing": kwargs.get("nodeSpacing", 100),
-                "treeSpacing": kwargs.get("treeSpacing", 200),
-                "blockShifting": kwargs.get("blockShifting", True),
-                "edgeMinimization": kwargs.get("edgeMinimization", True),
-                "parentCentralization": kwargs.get("parentCentralization", True),
-                "direction": kwargs.get("direction", "UD"),  # UD, DU, LR, RL
-                "sortMethod": kwargs.get("sortMethod", "hubsize"),  # hubsize, directed
-                "shakeTowards": kwargs.get("shakeTowards", "roots"),  # roots, leaves
+        if isinstance(physics, dict):
+            # if physics is a dict, use it directly
+            self.physics: PysicsConfig = PysicsConfig(**physics)
+        else:
+            # this is legacy functionality, convert to dict
+            self.physics: PysicsConfig = {
+                "enabled": physics,
+                "solver": kwargs.pop("solver", "barnesHut"),
+                "minVelocity": kwargs.pop("minVelocity", 1),
+                "maxVelocity": kwargs.pop("maxVelocity", 100),
+                "stabilization": {
+                    "enabled": kwargs.pop("stabilization", True),
+                    "fit": kwargs.pop("fit", True),
+                },
+                "timestep": kwargs.pop("timestep", 0.5),
             }
-        }
-        self.groups = kwargs.get("groups", None)
+        # https://visjs.github.io/vis-network/docs/network/layout.html
+        if isinstance(layout, dict):
+            # if layout is a dict, use it directly
+            self.layout: LayoutConfig = LayoutConfig(**layout)
+        else:
+            self.layout: LayoutConfig = {
+                "hierarchical": {
+                    "enabled": hierarchical,
+                    "levelSeparation": kwargs.pop("levelSeparation", 150),
+                    "nodeSpacing": kwargs.pop("nodeSpacing", 100),
+                    "treeSpacing": kwargs.pop("treeSpacing", 200),
+                    "blockShifting": kwargs.pop("blockShifting", True),
+                    "edgeMinimization": kwargs.pop("edgeMinimization", True),
+                    "parentCentralization": kwargs.pop("parentCentralization", True),
+                    "direction": kwargs.pop("direction", "UD"),  # UD, DU, LR, RL
+                    "sortMethod": kwargs.pop("sortMethod", "hubsize"),  # hubsize, directed
+                    "shakeTowards": kwargs.pop("shakeTowards", "roots"),  # roots, leaves
+                }
+            }
+        self.groups = kwargs.pop("groups", None)
 
-        self.__dict__.update(**kwargs)
-
-        if from_json:
-            self.from_json(from_json)
+        # set the remaining kwargs as attributes
+        for k, v in kwargs.items():
+            setattr(self, k, v)
 
     def to_dict(self):
         return self.__dict__
 
     def save(self, path):
-        config_json = json.dumps(self.__dict__, indent=2)
+        config_json = json.dumps(self.to_dict(), indent=2)
         if os.path.isabs(path):
             save_path = path
         else:
@@ -66,17 +122,13 @@ class Config:
         with open(save_path, "w") as file:
             file.write(config_json)
 
-    def from_json(self, path):
-        with open(path, "r") as f:
-            config_json = f.read()
-        self.__dict__ = json.loads(config_json)
-
 
 class ConfigBuilder(object):
     def __init__(self, nodes=None, edges=None, **kwargs):
-        self.kwargs = kwargs
+        self.kwargs: dict[str, Any] = kwargs
         self.nodes = nodes
         st.sidebar.write("Agraph Configurations")
+        # TODO: I am not sure what the below lines do, it looks like they would destroy themselves on run?
         self.basic_widget = self.basic_widget()
         self.physics_widget = self.physics_widget()
         self.hierarchical_widget = self.hierarchical_widget()
@@ -207,7 +259,7 @@ class ConfigBuilder(object):
         group_expander.checkbox("groups", value=self.kwargs.get("groups", False), key="groups")
         if st.session_state.groups:
             if self.nodes:
-                groups = list(set([node.__dict__.get("group", None) for node in self.nodes]))
+                groups = list({node.__dict__.get("group", None) for node in self.nodes})
                 if None in groups:
                     groups.remove(None)
                 with group_expander:
@@ -215,19 +267,17 @@ class ConfigBuilder(object):
                     for group in groups:
                         st.write(f"Group: {group}")
                         group_expander.text_input(
-                            f"Color (hex)", value=" #fe8a71", key=f"group_{group}"
+                            "Color (hex)", value=" #fe8a71", key=f"group_{group}"
                         )
                         groups_dict[group] = {"color": st.session_state[f"group_{group}"]}
                     self.kwargs.update({"groups": groups_dict})
 
-    def build(self, dictify=False):
+    def build(self, dictify=False) -> Config | dict[str, Any]:
         # self.physics_widget()
         # self.hierarchical_widget()
         if dictify:
             return self.kwargs
-        else:
-            self.config = Config(**self.kwargs)
-        return self.config
+        return Config(**self.kwargs)
 
     def _get_index(self, options, target):
         val = self.kwargs.get(target, None)

@@ -58,7 +58,7 @@ config = config_builder.build()
 config.save("config.json")
 
 # 3. Simple reload from json file (you can bump the builder at this point.)
-config = Config(from_json="config.json")
+config = Config.from_json("config.json")
 ```
 
 Formating the graph with hierachies is also possible via `Hierarchical Option` (see config):  
