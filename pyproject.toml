@@ -37,6 +37,7 @@ dependencies = [
 [dependency-groups]
 dev = [
   "ruff>=0.12.8",
+  "watchdog>=6.0.0",
 ]
 
 [project.urls]
@@ -48,10 +49,13 @@ requires = ["uv_build"]
 build-backend = "uv_build"
 [tool.uv.build-backend]
 module-root = ""
+# TODO: would be nice to be able to run npm install && npm run build before building the package
+source-exclude = ["frontend/node_modules"]
+wheel-exclude = ["frontend/node_modules", "frontend/public", "frontend/src", "frontend/package.json", "frontend/package-lock.json"]
 
 # RUFF settings
 [tool.ruff]
-target-version = "py313"
+target-version = "py310"
 line-length = 99
 
 [tool.ruff.lint]
