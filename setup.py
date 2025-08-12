@@ -2,7 +2,7 @@ import setuptools
 from os import path
 
 this_directory = path.abspath(path.dirname(__file__))
-with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
+with open(path.join(this_directory, "README.md"), encoding="utf-8") as f:
     long_description = f.read()
 
 # python setup.py sdist bdist_wheel
@@ -15,7 +15,7 @@ setuptools.setup(
     author="Christian Klose",
     author_email="chris.klose@gmx.net",
     description="Interactive Graph Vis for Streamlit.",
-    long_description= long_description,
+    long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/ChrisChross/streamlit-agraph",
     packages=setuptools.find_packages(),

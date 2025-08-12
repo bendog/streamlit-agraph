@@ -25,22 +25,23 @@ else:
         "agraph",
         url="http://localhost:3001",
     )
-      
+
+
 def agraph(nodes, edges, config):
     node_ids = [node.id for node in nodes]
     if len(node_ids) > len(set(node_ids)):
         st.warning("Duplicated node IDs exist.")
-    nodes_data = [ node.to_dict() for node in nodes]
-    edges_data = [ edge.to_dict() for edge in edges]
+    nodes_data = [node.to_dict() for node in nodes]
+    edges_data = [edge.to_dict() for edge in edges]
     config_json = json.dumps(config.__dict__)
-    data = { "nodes": nodes_data, "edges": edges_data}
+    data = {"nodes": nodes_data, "edges": edges_data}
     data_json = json.dumps(data)
     component_value = _agraph(data=data_json, config=config_json)
     return component_value
 
 
 if not _RELEASE:
-    st.set_page_config(layout="wide") # layout="wide"
+    st.set_page_config(layout="wide")  # layout="wide"
 
     st.title("Streamlit Agraph 2.0")
 
@@ -62,6 +63,5 @@ if not _RELEASE:
     #                 )
 
     return_value = agraph(nodes, edges, config=config)
-
 
     st.write(return_value)
